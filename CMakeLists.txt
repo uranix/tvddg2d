@@ -4,7 +4,7 @@ project(tvddg2d)
 
 set(CMAKE_CXX_STANDARD 11)
 
-list(APPEND CMAKE_CXX_FLAGS "-Wall")
+list(APPEND CMAKE_CXX_FLAGS "-Wall --max-errors=5")
 include_directories(/usr/include/eigen3)
 set(main_SOURCES main.cpp)
 

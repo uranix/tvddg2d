@@ -1,0 +1,86 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+
+\usepackage[intlimits]{amsmath}
+\usepackage{amssymb}
+
+\usepackage[a4paper, margin=1.5cm]{geometry}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+%opening
+\title{2D TVD DG}
+\author{Цыбулин Иван}
+
+\begin{document}
+
+\maketitle
+
+\[
+\pd{U}{t} + \pd{F(U)}{x} + \pd{G(U)}{y} = 0
+\]
+
+Пусть $w_k, s_k$ --- Гауссова квадратура на $[0, 1]$, $\mu^\pm_i = \ell_i(1/2 \pm 1/2)$.
+
+\begin{multline*}
+h_x h_y w_i w_j\dot U_{ij}
++ h_y \sum_{k=0}^p w_k \ell_j(s_k)
+[F_{+,k} \mu_i^+ - F_{-,k} \mu_i^-]
++ h_x \sum_{k=0}^p w_k \ell_i(s_k)
+[G_{k,+} \mu_j^+ - G_{k,-} \mu_j^-] = \\ =
+h_x h_y
+\sum_{k,m} w_k w_m \left\{
+F(U_{k,m}) \frac{\ell_i'(s_k)}{h_x} \ell_j(s_m)
++
+G(U_{k,m}) \ell_i(s_k)\frac{\ell_j'(s_m)}{h_y}
+\right\}
+\end{multline*}
+
+\begin{multline*}
+h_x h_y w_i w_j \dot U_{ij}
++ h_y w_j
+[F_{+,j} \mu_i^+ - F_{-,j} \mu_i^-]
++ h_x w_i
+[G_{i,+} \mu_j^+ - G_{i,-} \mu_j^-] = \\ =
+h_y w_j \sum_{k} w_k \ell_i'(s_k) F(U_{k,j})
++
+h_x w_i \sum_{m} w_m \ell_j'(s_m) G(U_{i,m})
+\end{multline*}
+
+\[
+\dot U_{ij} + \frac{\mathcal F_{i+1/2, j} - \mathcal F_{i-1/2, j}}{w_i h_x} + \frac{\mathcal G_{i,j+1/2} - \mathcal G_{i,j-1/2}}{w_j h_y} = 0
+\]
+
+\begin{gather*}
+\mathcal F_{i+1/2, j} - \mathcal F_{i-1/2, j} = 
+[F_{+,j} \mu_i^+ - F_{-,j} \mu_i^-]
+- \sum_{k=0}^p w_k \ell_i'(s_k) F(U_{k,j})\\
+\mathcal G_{i, j+1/2} - \mathcal G_{i, j-1/2} = 
+[G_{i,+} \mu_j^+ - G_{i,-} \mu_j^-]
+- \sum_{k=0}^p w_k \ell_j'(s_k) G(U_{i,k})\\
+\end{gather*}
+
+\[
+\begin{pmatrix}
+\mathcal F_{1/2, j} - \mathcal F_{-1/2, j}\\
+\vdots\\
+\mathcal F_{p+1/2, j} - \mathcal F_{p-1/2, j}
+\end{pmatrix}
+=
+\begin{pmatrix}
+-\mu_0^- & w_0 \ell'_0(s_0) & w_1 \ell'_0(s_1) & \dots & w_{p-1} \ell'_0(s_{p-1}) & w_p \ell'_0(s_p) & \mu_0^+\\
+\vdots\\
+-\mu_p^- & w_0 \ell'_p(s_0) & w_1 \ell'_p(s_1) & \dots & w_{p-1} \ell'_p(s_{p-1}) & w_p \ell'_p(s_p) & \mu_p^+
+\end{pmatrix}
+\begin{pmatrix}
+F_{-,j}\\
+F(U_{0,j})\\
+\vdots\\
+F(U_{p,j})\\
+F_{+,j}
+\end{pmatrix}
+\]
+
+\end{document}
