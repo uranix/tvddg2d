@@ -1,38 +1,12 @@
 #pragma once
 
-#ifndef SANITY_CHECKS
-# define SANITY_CHECKS 0
-#endif
-
-#ifndef NDEBUG
-# undef SANITY_CHECKS
-# define SANITY_CHECKS 1
-#endif
-
-#if SANITY_CHECKS
-# warning "Sanity checks are enabled"
-#endif
-
 #include "matrix.h"
 
 template<typename vars, int p>
 struct cell {
     using mat_t = matrix<p>;
-#if SANITY_CHECKS
-    bool extrapolated;
-#endif
-    cell() {
-#if SANITY_CHECKS
-        extrapolated = false;
-#endif
-    }
 	vars U[p+3][p+3];
     void extrapolate() {
-#if SANITY_CHECKS
-        if (extrapolated)
-            throw std::logic_error("double call to extrapolate");
-#endif
-
         for (int i = 0; i <= p; i++) {
             vars v1 = mat_t::mu[0] * access(i, 0);
             vars v2 = mat_t::mu[0] * access(i, p);
@@ -54,18 +28,6 @@ struct cell {
             access(p+1, j) = v3;
             access( -1, j) = v4;
         }
-#if SANITY_CHECKS
-        extrapolated = true;
-#endif
-    }
-    void touch() {
-#if SANITY_CHECKS
-        if (!extrapolated)
-            throw std::logic_error("unnessesary call to touch");
-#endif
-#if SANITY_CHECKS
-        extrapolated = false;
-#endif
     }
     const vars &access(int i, int j) const {
         return U[i+1][j+1];
@@ -74,10 +36,7 @@ struct cell {
         return U[i+1][j+1];
     }
     const vars &operator()(int i, int j) const {
-#if SANITY_CHECKS
-        bool inside = (i >= 0 && i <= p) && (j >= 0 && j <= p);
-        if (!inside && !extrapolated)
-            throw std::out_of_range("Data is not extrapolated to the bounds");
+#ifdef NDEBUG
         bool outside = (i < -1 || i > p+1) || (j < -1 || j > p+1);
         if (outside)
             throw std::out_of_range("Cell subindex out of range: (" +
@@ -93,14 +52,16 @@ struct cell {
 };
 
 /*
-      0       p
-    +---+---+---+
-  0 |   |   |   |
-    +---+---+---+
-    |   |   |   |
-    +---+---+---+
-  p |   |   |   |
-    +---+---+---+
+  ^ j
+  |
+    +-G-+-G-+-G-+
+  p F   F   F   F
+    +-G-+-G-+-G-+
+    F   F   F   F
+    +-G-+-G-+-G-+
+  0 F   F   F   F
+    +-G-+-G-+-G-+
+      0       p   -> i
 */
 template<typename vars, int p>
 struct flux_cell {

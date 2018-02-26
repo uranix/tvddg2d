@@ -9,14 +9,8 @@
 #include "cell.h"
 #include "grid.h"
 
-namespace dir {
-    struct x     {};
-    struct y     {};
-    struct down  {};
-    struct up    {};
-    struct left  {};
-    struct right {};
-};
+enum struct dir { X, Y };
+enum struct side { L, R, U, D };
 
 template<typename PROBLEM, int p>
 struct layer {
@@ -47,6 +41,7 @@ struct layer {
                         double y = (j + mat_t::s[jj]) * g.hy;
                         c(ii, jj) = f(x, y);
                     }
+                c.extrapolate();
             }
     }
     void extrapolate() {
@@ -116,14 +111,13 @@ struct flux_layer {
     flux_cell_t &operator()(int i, int j) {
         return data[i * g.Ny + j];
     }
-    template<class problem>
-    void compute_ho(const layer<problem, p> &lay, const problem &prob, double t) {
+    void compute_ho(const layer<PROBLEM, p> &lay, const PROBLEM &prob, double t) {
         auto &fl = *this;
         for (int i = 1; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++)
                 for (int k = 0; k <= p; k++) {
-                    const std::pair<vars_t, vars_t> &ff = prob.template riemman<dir::x>(
-                            lay(i-1, j)(p, k), lay(i, j)(0, k), g(i-1, j), g(i, j)
+                    const std::pair<vars_t, vars_t> &ff = prob.riemman(
+                            dir::X, lay(i-1, j)(p, k), lay(i, j)(0, k), g(i-1, j), g(i, j)
                         );
                     fl(i-1, j).F[p+1][k] = ff.first;
                     fl(i  , j).F[  0][k] = ff.second;
@@ -131,21 +125,21 @@ struct flux_layer {
         for (int i = 0; i < g.Nx; i++)
             for (int j = 1; j < g.Ny; j++)
                 for (int k = 0; k <= p; k++) {
-                    const std::pair<vars_t, vars_t> &ff = prob.template riemman<dir::y>(
-                            lay(i, j-1)(k, p), lay(i, j)(k, 0), g(i, j-1), g(i, j)
+                    const std::pair<vars_t, vars_t> &ff = prob.riemman(
+                            dir::Y, lay(i, j-1)(k, p), lay(i, j)(k, 0), g(i, j-1), g(i, j)
                         );
                     fl(i, j-1).G[k][p+1] = ff.first;
                     fl(i, j  ).G[k][  0] = ff.second;
                 }
         for (int j = 0; j < g.Ny; j++)
             for (int k = 0; k <= p; k++) {
-                fl(0     , j).F[0  ][k] = prob.template bc<dir:: left>(lay(0     , j)( -1, k), g(0     , j), t);
-                fl(g.Nx-1, j).F[p+1][k] = prob.template bc<dir::right>(lay(g.Nx-1, j)(p+1, k), g(g.Nx-1, j), t);
+                fl(0     , j).F[0  ][k] = prob.bc(side::L, lay(0     , j)( -1, k), g(0     , j), t);
+                fl(g.Nx-1, j).F[p+1][k] = prob.bc(side::R, lay(g.Nx-1, j)(p+1, k), g(g.Nx-1, j), t);
             }
         for (int i = 0; i < g.Nx; i++)
             for (int k = 0; k <= p; k++) {
-                fl(i, 0     ).G[k][0  ] = prob.template bc<dir::down >(lay(i, 0     )(k,  -1), g(i, 0     ), t);
-                fl(i, g.Ny-1).G[k][p+1] = prob.template bc<dir::up   >(lay(i, g.Ny-1)(k, p+1), g(i, g.Ny-1), t);
+                fl(i, 0     ).G[k][0  ] = prob.bc(side::D, lay(i, 0     )(k,  -1), g(i, 0     ), t);
+                fl(i, g.Ny-1).G[k][p+1] = prob.bc(side::U, lay(i, g.Ny-1)(k, p+1), g(i, g.Ny-1), t);
             }
         for (int i = 0; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++) {
