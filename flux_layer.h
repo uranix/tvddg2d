@@ -2,9 +2,18 @@
 
 #include "layer.h"
 
-#include "util.h"
+template<typename vec>
+vec minmod(const vec &x, const vec &y) {
+    const auto &sx = x.cwiseSign();
+    const auto &sy = y.cwiseSign();
+    return 0.5 * (sx + sy).cwiseProduct(x.cwiseAbs().cwiseMin(y.cwiseAbs()));
+}
 
-template<typename PROBLEM, int p>
+namespace scheme {
+    enum { LO = 0, HO = 1, TVD = 2 };
+}
+
+template<typename PROBLEM, int p, int sch>
 struct flux_layer {
 
     using param_t = typename PROBLEM::param_t;
@@ -196,10 +205,50 @@ struct flux_layer {
                 }
             }
     }
+    void limit_fluxes() {
+        for (int i = 0; i < g.Nx; i++)
+            for (int j = 0; j < g.Ny; j++) {
+                for (int ii = 0; ii <= p+1; ii++)
+                    for (int jj = 0; jj <= p; jj++) {
+                        const auto &Ix = low_order(i, j).Ix[ii][jj];
+                        const auto &g0 = Ix.D;
+                        const auto &gL = ii > 0 ? low_order(i, j).Ix[ii-1][jj].D
+                            : i > 0 ? low_order(i-1, j).Ix[p][jj].D : g0;
+                        const auto &gR = ii <= p ? low_order(i, j).Ix[ii+1][jj].D
+                            : i < g.Nx - 1 ? low_order(i+1, j).Ix[1][jj].D : g0;
+                        const auto &mL = minmod(g0, gL);
+                        const auto &mR = minmod(g0, gR);
+                        const auto &phi0 = 0.5 * (Ix.L.cwiseAbs().cwiseProduct(mL + mR) + Ix.L.cwiseProduct(mL - mR));
+                        const auto &phi = minmod<decltype(Ix.D)>(Ix.W * (high_order(i, j).F[ii][jj] - low_order(i, j).F[ii][jj]), phi0);
+                        high_order(i, j).F[ii][jj] = low_order(i, j).F[ii][jj] + phi;
+                    }
+                for (int ii = 0; ii <= p; ii++)
+                    for (int jj = 0; jj <= p+1; jj++) {
+                        const auto &Iy = low_order(i, j).Iy[ii][jj];
+                        const auto &g0 = Iy.D;
+                        const auto &gL = jj > 0 ? low_order(i, j).Iy[ii][jj-1].D
+                            : j > 0 ? low_order(i, j-1).Iy[ii][p].D : g0;
+                        const auto &gR = jj <= p ? low_order(i, j).Iy[ii][jj+1].D
+                            : j < g.Ny - 1 ? low_order(i+1, j).Iy[ii][1].D : g0;
+                        const auto &mL = minmod(g0, gL);
+                        const auto &mR = minmod(g0, gR);
+                        const auto &phi0 = 0.5 * (Iy.L.cwiseAbs().cwiseProduct(mL + mR) + Iy.L.cwiseProduct(mL - mR));
+                        const auto &phi = minmod<decltype(Iy.D)>(Iy.W * (high_order(i, j).G[ii][jj] - low_order(i, j).G[ii][jj]), phi0);
+                        high_order(i, j).G[ii][jj] = low_order(i, j).G[ii][jj] + phi;
+                    }
+            }
+    }
     void compute(const layer<PROBLEM, p> &lay, const PROBLEM &prob, double t) {
-        return compute_ho(lay, prob, t);
+        if (sch != scheme::LO)
+            compute_ho(lay, prob, t);
+        if (sch != scheme::HO)
+            compute_lo(lay, prob, t);
+        if (sch == scheme::TVD)
+            limit_fluxes();
     }
     const flux_cell_t &operator()(int i, int j) const {
+        if (sch == scheme::LO)
+            return low_order(i, j);
         return high_order(i, j);
     }
 };

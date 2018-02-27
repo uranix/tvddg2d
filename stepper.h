@@ -3,8 +3,6 @@
 #include "layer.h"
 #include "flux_layer.h"
 
-#include <iostream>
-
 struct base_stepper {
     // y := a y + b x
     template<typename PROBLEM, int p>
@@ -33,9 +31,9 @@ struct base_stepper {
                 }
         }
     }
-    template<typename PROBLEM, int p>
+    template<typename PROBLEM, int p, int sch>
     void euler_step(const layer<PROBLEM, p> &from, layer<PROBLEM, p> &to,
-            const flux_layer<PROBLEM, p> &flx, const double dt)
+            const flux_layer<PROBLEM, p, sch> &flx, const double dt)
     {
         const auto &g = from.g;
         using quad_t = quadrature<p>;
@@ -45,12 +43,7 @@ struct base_stepper {
                 const auto &oc = from(i, j);
                 auto &c = to(i, j);
                 auto &fc = flx(i, j);
-/*
-                std::cout << "flux cell " << i << " " << j << "\n";
-                for (int ii = 0; ii <= p+1; ii++)
-                    std::cout << fc.F[ii][0][0] << "\n";
-                std::cout << "\n";
-*/
+
                 for (int ii = 0; ii <= p; ii++)
                     for (int jj = 0; jj <= p; jj++) {
                         c(ii, jj) = oc(ii, jj)
@@ -61,12 +54,12 @@ struct base_stepper {
     }
 };
 
-template<typename PROBLEM, int p, int ord> struct stepper;
+template<typename PROBLEM, int p, int ord, int sch> struct stepper;
 
-template<typename PROBLEM, int p>
-struct stepper<PROBLEM, p, 1> : public base_stepper {
+template<typename PROBLEM, int p, int sch>
+struct stepper<PROBLEM, p, 1, sch> : public base_stepper {
     layer<PROBLEM, p> lay;
-    flux_layer<PROBLEM, p> flx;
+    flux_layer<PROBLEM, p, sch> flx;
 
     stepper(const grid<typename PROBLEM::param_t> &g)
         : lay(g), flx(g)
@@ -82,11 +75,11 @@ struct stepper<PROBLEM, p, 1> : public base_stepper {
     }
 };
 
-template<typename PROBLEM, int p>
-struct stepper<PROBLEM, p, 2> : public base_stepper {
+template<typename PROBLEM, int p, int sch>
+struct stepper<PROBLEM, p, 2, sch> : public base_stepper {
     layer<PROBLEM, p> lay;
     layer<PROBLEM, p> laymid;
-    flux_layer<PROBLEM, p> flx;
+    flux_layer<PROBLEM, p, sch> flx;
 
     using quad_t = quadrature<p>;
 
@@ -109,11 +102,11 @@ struct stepper<PROBLEM, p, 2> : public base_stepper {
     }
 };
 
-template<typename PROBLEM, int p>
-struct stepper<PROBLEM, p, 3> : public base_stepper {
+template<typename PROBLEM, int p, int sch>
+struct stepper<PROBLEM, p, 3, sch> : public base_stepper {
     layer<PROBLEM, p> lay;
     layer<PROBLEM, p> laymid;
-    flux_layer<PROBLEM, p> flx;
+    flux_layer<PROBLEM, p, sch> flx;
 
     using quad_t = quadrature<p>;
 

@@ -60,35 +60,30 @@ struct layer {
     }
     void save(const std::string &fn) const {
         std::ofstream f(fn, std::ios::binary);
-        const double eps = 1e-10;
 
         f << "# vtk DataFile Version 3.0\nLayer\nBINARY\nDATASET RECTILINEAR_GRID\n";
-        f << "DIMENSIONS " << (p+3)*g.Nx << " " << (p+3)*g.Ny << " 1\n";
-        f << "X_COORDINATES " << (p+3)*g.Nx << " float\n";
+        f << "DIMENSIONS " << (p+1)*g.Nx << " " << (p+1)*g.Ny << " 1\n";
+        f << "X_COORDINATES " << (p+1)*g.Nx << " float\n";
         for (int i = 0; i < g.Nx; i++) {
-            put(f, (i + eps)*g.hx);
             for (int j = 0; j <= p; j++)
                 put(f, (i + quad_t::s[j])*g.hx);
-            put(f, (i+1)*g.hx);
         }
-        f << "Y_COORDINATES " << (p+3)*g.Ny << " float\n";
+        f << "Y_COORDINATES " << (p+1)*g.Ny << " float\n";
         for (int i = 0; i < g.Ny; i++) {
-            put(f, (i + eps)*g.hy);
             for (int j = 0; j <= p; j++)
                 put(f, (i + quad_t::s[j])*g.hy);
-            put(f, (i+1)*g.hy);
         }
         f << "Z_COORDINATES 1 float\n";
         put(f, 0);
-        f << "CELL_DATA " << ((p+3)*g.Nx - 1) * ((p+3)*g.Ny - 1) << "\n";
-        f << "POINT_DATA " << ((p+3)*g.Nx) * ((p+3)*g.Ny) << "\n";
+        f << "CELL_DATA " << ((p+1)*g.Nx - 1) * ((p+1)*g.Ny - 1) << "\n";
+        f << "POINT_DATA " << ((p+1)*g.Nx) * ((p+1)*g.Ny) << "\n";
         for (int m = 0; m < vars_t::dim; m++) {
             f << "SCALARS " << vars_t::get_component_name(m) << " float\nLOOKUP_TABLE default\n";
             for (int j = 0; j < g.Ny; j++)
-                for (int jj = -1; jj <= p+1; jj++)
+                for (int jj = 0; jj <= p; jj++)
                     for (int i = 0; i < g.Nx; i++) {
                         auto &c = (*this)(i, j);
-                        for (int ii = -1; ii <= p+1; ii++)
+                        for (int ii = 0; ii <= p; ii++)
                                 put(f, c(ii, jj)[m]);
                     }
         }

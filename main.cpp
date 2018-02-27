@@ -36,7 +36,7 @@ struct gasdyn {
     using mat_t = Eigen::Matrix3d;
 
     vars_t initial(double x, double y) const {
-        if (x > .2 && x < .4 && y > -1.2 && y < 10.4)
+        if (x > .2 && x < .4 && y > .2 && y < .4)
             return gdvars(1, 1, 1);
         else
             return gdvars(0, 0, 0);
@@ -69,27 +69,41 @@ struct gasdyn {
     }
 };
 
-int main() {
-    constexpr int p = 2;
+template<int sch>
+void run() {
+    constexpr int p = 3;
     constexpr int order = 3;
+
+    const char *sname[3] = {"LO", "HO", "TVD"};
+
+    const std::string prefix("res_" + std::string(sname[sch]) + ".");
+
     gasdyn prob;
-    grid<param> g(30, 50, 1.0, 1.5);
-    stepper<gasdyn, p, order> stp(g);
+    grid<param> g(100, 200, 1.0, 1.5);
+
+    stepper<gasdyn, p, order, sch> stp(g);
     stp.lay.fill([&prob] (double x, double y) { return prob.initial(x, y); });
-    stp.lay.save("res.0.vtk");
+    stp.lay.save(prefix + "0.vtk");
 
     double t = 0;
-    const double dt = 0.03 * std::min(g.hx, g.hy/2);
+    const double dt = 0.03 * std::min(g.hx, g.hy / 2);
     const double tmax = 0.3;
     int step = 1;
     while (t < tmax) {
         stp.advance(prob, dt, t);
-        if (step % 50 == 0) {
+        if (step % 100 == 0) {
             std::cout << "t = " << t << std::endl;
-            stp.lay.save("res." + std::to_string(step) + ".vtk");
+            stp.lay.save(prefix + std::to_string(step) + ".vtk");
         }
         t += dt;
         step++;
     }
+}
+
+int main() {
+    run<scheme::LO>();
+    run<scheme::HO>();
+    run<scheme::TVD>();
     return 0;
 }
+
