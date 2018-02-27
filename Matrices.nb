@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     10800,        292]
-NotebookOptionsPosition[     10420,        274]
-NotebookOutlinePosition[     10789,        290]
-CellTagsIndexPosition[     10746,        287]
+NotebookDataLength[     10823,        292]
+NotebookOptionsPosition[     10442,        274]
+NotebookOutlinePosition[     10811,        290]
+CellTagsIndexPosition[     10768,        287]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -24,7 +24,7 @@ Cell[BoxData[{
  RowBox[{"dig", "=", "20"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"f", "=", 
-   RowBox[{"OpenWrite", "[", "\"\<mat.h\>\"", "]"}]}], 
+   RowBox[{"OpenWrite", "[", "\"\<quad.h\>\"", "]"}]}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{"Do", "[", "\[IndentingNewLine]", 
   RowBox[{
@@ -160,7 +160,7 @@ Cell[BoxData[{
      RowBox[{"Chop", "[", "F2F", "]"}]}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{
-     "f", ",", " ", "\"\<template<> struct matrix<\>\"", ",", "p", ",", 
+     "f", ",", " ", "\"\<template<> struct quadrature<\>\"", ",", "p", ",", 
       "\"\<> {\\n\>\""}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{
@@ -241,21 +241,21 @@ Cell[BoxData[{
     "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{"f", ",", " ", "\"\<constexpr std::array<double, \>\"", ",", 
-      RowBox[{"p", "+", "1"}], ",", "\"\<> matrix<\>\"", ",", "p", ",", 
+      RowBox[{"p", "+", "1"}], ",", "\"\<> quadrature<\>\"", ",", "p", ",", 
       "\"\<>::s;\\n\>\""}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{"f", ",", " ", "\"\<constexpr std::array<double, \>\"", ",", 
-      RowBox[{"p", "+", "1"}], ",", "\"\<> matrix<\>\"", ",", "p", ",", 
+      RowBox[{"p", "+", "1"}], ",", "\"\<> quadrature<\>\"", ",", "p", ",", 
       "\"\<>::w;\\n\>\""}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{"f", ",", " ", "\"\<constexpr std::array<double, \>\"", ",", 
-      RowBox[{"p", "+", "1"}], ",", "\"\<> matrix<\>\"", ",", "p", ",", 
+      RowBox[{"p", "+", "1"}], ",", "\"\<> quadrature<\>\"", ",", "p", ",", 
       "\"\<>::mu;\\n\>\""}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{
      "f", ",", " ", "\"\<constexpr std::array<std::array<double, \>\"", ",", 
       RowBox[{"p", "+", "3"}], ",", "\"\<>, \>\"", ",", 
-      RowBox[{"p", "+", "2"}], ",", "\"\<> matrix<\>\"", ",", "p", ",", 
+      RowBox[{"p", "+", "2"}], ",", "\"\<> quadrature<\>\"", ",", "p", ",", 
       "\"\<>::F2F;\\n\>\""}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"WriteString", "[", 
      RowBox[{"f", ",", " ", "\"\<\\n\>\""}], "]"}], ";"}], 
@@ -268,12 +268,12 @@ Cell[BoxData[{
 Cell[BoxData["20"], "Output",
  ExpressionUUID -> "f850420f-36df-4830-905c-115400229c89"],
 
-Cell[BoxData["\<\"mat.h\"\>"], "Output",
+Cell[BoxData["\<\"quad.h\"\>"], "Output",
  ExpressionUUID -> "f850420f-36df-4830-905c-115400229c89"]
 }, Open  ]]
 },
 WindowSize->{1366, 685},
-WindowMargins->{{Automatic, 250}, {Automatic, 17}},
+WindowMargins->{{Automatic, 240}, {Automatic, -8}},
 Magnification:>1.1 Inherited,
 FrontEndVersion->"10.0 for Linux x86 (64-bit) (December 4, 2014)",
 StyleDefinitions->"Default.nb"
@@ -290,9 +290,9 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 9631, 243, 1426, "Input"],
-Cell[10214, 267, 88, 1, 48, "Output"],
-Cell[10305, 270, 99, 1, 48, "Output"]
+Cell[580, 22, 9652, 243, 1339, "Input"],
+Cell[10235, 267, 88, 1, 48, "Output"],
+Cell[10326, 270, 100, 1, 48, "Output"]
 }, Open  ]]
 }
 ]

@@ -3,17 +3,17 @@
 #include <iostream>
 #include <Eigen/Core>
 
-struct vars : public Eigen::Vector3d {
+struct gdvars : public Eigen::Vector3d {
     static constexpr int dim = 3;
-    vars() { *this << 0, 0, 0; }
-    vars(double rho, double u, double eps) {
+    gdvars() { *this << 0, 0, 0; }
+    gdvars(double rho, double u, double eps) {
 //        *this << rho, rho * u, rho * (eps + 0.5*u*u);
         *this << rho, u, eps;
     }
     template<class Other>
-    vars(const Other &o) : Eigen::Vector3d(o) { }
+    gdvars(const Other &o) : Eigen::Vector3d(o) { }
     template<class Other>
-    vars &operator=(const Other &o) {
+    gdvars &operator=(const Other &o) {
         Eigen::Vector3d::operator=(o);
         return *this;
     }
@@ -29,48 +29,58 @@ struct param {
 };
 
 struct gasdyn {
-    using vars_t = vars;
+    using vars_t = gdvars;
     using param_t = param;
+
+    using vec_t = Eigen::Vector3d;
+    using mat_t = Eigen::Matrix3d;
+
     vars_t initial(double x, double y) const {
-        if (x > .2 && x < .4 && y > .2 && y < .4)
-            return vars(1, 1, 1);
+        if (x > .2 && x < .4 && y > -1.2 && y < 10.4)
+            return gdvars(1, 1, 1);
         else
-            return vars(0, 0, 0);
+            return gdvars(0, 0, 0);
     }
     std::pair<vars_t, vars_t> riemman(dir d, const vars_t &UL, const vars_t &UR, const param_t &pL, const param_t &pR) const {
-        vars_t f = (d == dir::X) ? F(UL, pL) : G(UL, pL);
+        vars_t f = F(d, UL, pL);
         return std::make_pair(f, f);
     }
     vars_t bc(side s, const vars_t &U, const param_t &p, double t) const {
         switch (s) {
-            case side::L: return F(vars_t(), p);
-            case side::R: return F(U, p);
-            case side::D: return G(vars_t(), p);
-            case side::U: return G(U, p);
+            case side::L: return F(dir::X, vars_t(), p);
+            case side::R: return F(dir::X, U, p);
+            case side::D: return F(dir::Y, vars_t(), p);
+            case side::U: return F(dir::Y, U, p);
         }
         throw std::invalid_argument("What the side");
     }
 
-    vars_t F(const vars_t &U, const param_t &p) const {
-        return 1 * U;
+    vars_t F(dir d, const vars_t &U, const param_t &p) const {
+        return (d == dir::X ? 1 : 2) * U;
     }
-    vars_t G(const vars_t &U, const param_t &p) const {
-        return 2 * U;
+    mat_t W(dir d, const vars_t &U, const param_t &p) const {
+        return mat_t::Identity();
+    }
+    mat_t iW(dir d, const vars_t &U, const param_t &p) const {
+        return mat_t::Identity();
+    }
+    vec_t L(dir d, const vars_t &U, const param_t &p) const {
+        return (d == dir::X ? 1 : 2) * vec_t(1, 1, 1);
     }
 };
 
 int main() {
-    constexpr int p = 4;
+    constexpr int p = 2;
     constexpr int order = 3;
     gasdyn prob;
-    grid<param> g(50, 200, 1.0, 2.0);
+    grid<param> g(30, 50, 1.0, 1.5);
     stepper<gasdyn, p, order> stp(g);
     stp.lay.fill([&prob] (double x, double y) { return prob.initial(x, y); });
     stp.lay.save("res.0.vtk");
 
     double t = 0;
     const double dt = 0.03 * std::min(g.hx, g.hy/2);
-    const double tmax = 0.2;
+    const double tmax = 0.3;
     int step = 1;
     while (t < tmax) {
         stp.advance(prob, dt, t);

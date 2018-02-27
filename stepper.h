@@ -38,7 +38,7 @@ struct base_stepper {
             const flux_layer<PROBLEM, p> &flx, const double dt)
     {
         const auto &g = from.g;
-        using mat_t = matrix<p>;
+        using quad_t = quadrature<p>;
 
         for (int i = 0; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++) {
@@ -54,8 +54,8 @@ struct base_stepper {
                 for (int ii = 0; ii <= p; ii++)
                     for (int jj = 0; jj <= p; jj++) {
                         c(ii, jj) = oc(ii, jj)
-                            - dt * (fc.F[ii+1][jj] - fc.F[ii][jj]) / (g.hx * mat_t::w[ii])
-                            - dt * (fc.G[ii][jj+1] - fc.G[ii][jj]) / (g.hy * mat_t::w[jj]);
+                            - dt * (fc.F[ii+1][jj] - fc.F[ii][jj]) / (g.hx * quad_t::w[ii])
+                            - dt * (fc.G[ii][jj+1] - fc.G[ii][jj]) / (g.hy * quad_t::w[jj]);
                     }
             }
     }
@@ -88,7 +88,7 @@ struct stepper<PROBLEM, p, 2> : public base_stepper {
     layer<PROBLEM, p> laymid;
     flux_layer<PROBLEM, p> flx;
 
-    using mat_t = matrix<p>;
+    using quad_t = quadrature<p>;
 
     stepper(const grid<typename PROBLEM::param_t> &g)
         : lay(g), laymid(g), flx(g)
@@ -115,7 +115,7 @@ struct stepper<PROBLEM, p, 3> : public base_stepper {
     layer<PROBLEM, p> laymid;
     flux_layer<PROBLEM, p> flx;
 
-    using mat_t = matrix<p>;
+    using quad_t = quadrature<p>;
 
     stepper(const grid<typename PROBLEM::param_t> &g)
         : lay(g), laymid(g), flx(g)

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "matrix.h"
+#include "quadrature.h"
 #include "cell.h"
 #include "grid.h"
 
@@ -20,12 +20,12 @@ struct layer {
     const grid<param_t> &g;
 
     using cell_t = cell<vars_t, p>;
-    using mat_t = matrix<p>;
+    using quad_t = quadrature<p>;
     std::vector<cell_t> data;
 
     layer(const grid<param_t> &g) : g(g), data(g.Nx * g.Ny) {
     }
-    const cell_t operator()(int i, int j) const {
+    const cell_t &operator()(int i, int j) const {
         return data[i * g.Ny + j];
     }
     cell_t &operator()(int i, int j) {
@@ -37,8 +37,8 @@ struct layer {
                 cell_t &c = (*this)(i, j);
                 for (int ii = 0; ii <= p; ii++)
                     for (int jj = 0; jj <= p; jj++) {
-                        double x = (i + mat_t::s[ii]) * g.hx;
-                        double y = (j + mat_t::s[jj]) * g.hy;
+                        double x = (i + quad_t::s[ii]) * g.hx;
+                        double y = (j + quad_t::s[jj]) * g.hy;
                         c(ii, jj) = f(x, y);
                     }
                 c.extrapolate();
@@ -68,14 +68,14 @@ struct layer {
         for (int i = 0; i < g.Nx; i++) {
             put(f, (i + eps)*g.hx);
             for (int j = 0; j <= p; j++)
-                put(f, (i + mat_t::s[j])*g.hx);
+                put(f, (i + quad_t::s[j])*g.hx);
             put(f, (i+1)*g.hx);
         }
         f << "Y_COORDINATES " << (p+3)*g.Ny << " float\n";
         for (int i = 0; i < g.Ny; i++) {
             put(f, (i + eps)*g.hy);
             for (int j = 0; j <= p; j++)
-                put(f, (i + mat_t::s[j])*g.hy);
+                put(f, (i + quad_t::s[j])*g.hy);
             put(f, (i+1)*g.hy);
         }
         f << "Z_COORDINATES 1 float\n";
