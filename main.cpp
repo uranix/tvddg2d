@@ -32,7 +32,7 @@ struct gasdyn {
     using vars_t = vars;
     using param_t = param;
     vars_t initial(double x, double y) const {
-        if (x > .2 && x < .4 && y > .2 && y < .8)
+        if (x > .2 && x < .4 && y > .2 && y < .4)
             return vars(1, 1, 1);
         else
             return vars(0, 0, 0);
@@ -55,27 +55,29 @@ struct gasdyn {
         return 1 * U;
     }
     vars_t G(const vars_t &U, const param_t &p) const {
-        return 0 * U;
+        return 2 * U;
     }
 };
 
 int main() {
-    constexpr int p = 1;
-    constexpr int order = 2;
+    constexpr int p = 4;
+    constexpr int order = 3;
     gasdyn prob;
-    grid<param> g(50, 1, 1.0, 1.0);
+    grid<param> g(50, 200, 1.0, 2.0);
     stepper<gasdyn, p, order> stp(g);
     stp.lay.fill([&prob] (double x, double y) { return prob.initial(x, y); });
     stp.lay.save("res.0.vtk");
 
     double t = 0;
-    const double dt = 0.0001;
-    const double tmax = 0.1;
+    const double dt = 0.03 * std::min(g.hx, g.hy/2);
+    const double tmax = 0.2;
     int step = 1;
     while (t < tmax) {
         stp.advance(prob, dt, t);
-        if (step % 10 == 0)
+        if (step % 50 == 0) {
+            std::cout << "t = " << t << std::endl;
             stp.lay.save("res." + std::to_string(step) + ".vtk");
+        }
         t += dt;
         step++;
     }
