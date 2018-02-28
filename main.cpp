@@ -1,5 +1,7 @@
 #include "stepper.h"
 
+#include "Profiler.h"
+
 #include <iostream>
 #include <Eigen/Core>
 
@@ -71,6 +73,7 @@ struct gasdyn {
 
 template<int sch>
 void run() {
+    PROFILE_ME;
     constexpr int p = 3;
     constexpr int order = 3;
 
@@ -87,11 +90,11 @@ void run() {
 
     double t = 0;
     const double dt = 0.03 * std::min(g.hx, g.hy / 2);
-    const double tmax = 0.3;
+    const double tmax = 10 * dt;
     int step = 1;
     while (t < tmax) {
         stp.advance(prob, dt, t);
-        if (step % 100 == 0) {
+        if (step % 50 == 0) {
             std::cout << "t = " << t << std::endl;
             stp.lay.save(prefix + std::to_string(step) + ".vtk");
         }
@@ -101,9 +104,15 @@ void run() {
 }
 
 int main() {
+    PROFILE_ME;
+
     run<scheme::LO>();
     run<scheme::HO>();
     run<scheme::TVD>();
+
+    PROFILE_END;
+    std::cout << profiler::getInstance() << std::endl;
+
     return 0;
 }
 

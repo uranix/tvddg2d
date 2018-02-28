@@ -7,6 +7,7 @@ struct base_stepper {
     // y := a y + b x
     template<typename PROBLEM, int p>
     void combine(const layer<PROBLEM, p> &x, layer<PROBLEM, p> &y, const double alpha, const double beta) {
+        PROFILE_ME;
         const auto &g = x.g;
 
         if (alpha != 0) {
@@ -35,6 +36,7 @@ struct base_stepper {
     void euler_step(const layer<PROBLEM, p> &from, layer<PROBLEM, p> &to,
             const flux_layer<PROBLEM, p, sch> &flx, const double dt)
     {
+        PROFILE_ME;
         const auto &g = from.g;
         using quad_t = quadrature<p>;
 
@@ -89,6 +91,7 @@ struct stepper<PROBLEM, p, 2, sch> : public base_stepper {
     }
 
     void advance(const PROBLEM &prob, const double dt, const double t) {
+        PROFILE_ME;
         flx.compute(lay, prob, t);
         euler_step(lay, laymid, flx, dt);
 

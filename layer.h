@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "Profiler.h"
+
 #include "quadrature.h"
 #include "cell.h"
 #include "grid.h"
@@ -45,6 +47,7 @@ struct layer {
             }
     }
     void extrapolate() {
+        PROFILE_ME;
         for (int i = 0; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++)
                 (*this)(i, j).extrapolate();

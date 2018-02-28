@@ -2,6 +2,8 @@
 
 #include "layer.h"
 
+#include "Profiler.h"
+
 template<typename vec>
 vec minmod(const vec &x, const vec &y) {
     const auto &sx = x.cwiseSign();
@@ -55,6 +57,7 @@ struct flux_layer {
         I.D  = I.W * (uR - uL);
     }
     void compute_lo(const layer<PROBLEM, p> &lay, const PROBLEM &prob, double t) {
+        PROFILE_ME;
         for (int i = 1; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++)
                 for (int k = 0; k <= p; k++) {
@@ -156,6 +159,7 @@ struct flux_layer {
             }
     }
     void compute_ho(const layer<PROBLEM, p> &lay, const PROBLEM &prob, double t) {
+        PROFILE_ME;
         for (int i = 1; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++)
                 for (int k = 0; k <= p; k++) {
@@ -206,6 +210,7 @@ struct flux_layer {
             }
     }
     void limit_fluxes() {
+        PROFILE_ME;
         for (int i = 0; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++) {
                 for (int ii = 0; ii <= p+1; ii++)
