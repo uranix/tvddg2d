@@ -33,7 +33,7 @@ struct layer {
     cell_t &operator()(int i, int j) {
         return data[i * g.Ny + j];
     }
-    void fill(std::function<vars_t(double, double)> f) {
+    void fill(const PROBLEM &prob) {
         for (int i = 0; i < g.Nx; i++)
             for (int j = 0; j < g.Ny; j++) {
                 cell_t &c = (*this)(i, j);
@@ -41,7 +41,7 @@ struct layer {
                     for (int jj = 0; jj <= p; jj++) {
                         double x = (i + quad_t::s[ii]) * g.hx;
                         double y = (j + quad_t::s[jj]) * g.hy;
-                        c(ii, jj) = f(x, y);
+                        c(ii, jj) = prob.initial(x, y);
                     }
                 c.extrapolate();
             }
