@@ -229,7 +229,7 @@ struct flux_layer {
                         const auto &gL = jj > 0 ? low_order(i, j).Iy[ii][jj-1].D
                             : j > 0 ? low_order(i, j-1).Iy[ii][p].D : g0;
                         const auto &gR = jj <= p ? low_order(i, j).Iy[ii][jj+1].D
-                            : j < g.Ny - 1 ? low_order(i+1, j).Iy[ii][1].D : g0;
+                            : j < g.Ny - 1 ? low_order(i, j+1).Iy[ii][1].D : g0;
                         const auto &mL = minmod(g0, gL);
                         const auto &mR = minmod(g0, gR);
                         const auto &phi0 = 0.5 * (Iy.L.cwiseAbs().cwiseProduct(mL + mR) + Iy.L.cwiseProduct(mL - mR));
