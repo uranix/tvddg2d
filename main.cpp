@@ -140,7 +140,7 @@ void run() {
     const std::string prefix("shallow_" + std::string(sname[sch]) + ".");
 
     shallow prob;
-    grid<param> g(50, 50, 1.0, 1.0);
+    grid<param> g(100, 100, 1.0, 1.0);
 
     stepper<shallow, p, order, sch> stp(g);
     stp.lay.fill(prob);
@@ -148,15 +148,18 @@ void run() {
     std::cout << "Now " << prefix << std::endl;
 
     double t = 0;
-    const double tmax = 0.3;
+    const double tmax = 1;
+    const double dtout = tmax / 300;
+    double tout = dtout;
     const double C = 0.02;
     int step = 1;
     while (t < tmax) {
         double dt = stp.estimate_timestep(prob, C);
         stp.advance(prob, dt, t);
-        if (step % 10 == 0) {
+        if (t > tout) {
             std::cout << "t = " << t << std::endl;
             stp.lay.save(prefix + std::to_string(step) + ".vtk");
+            tout += dtout;
         }
         t += dt;
         step++;
