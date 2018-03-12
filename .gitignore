@@ -2,7 +2,7 @@
 quad.h 
 
 build/
-build-*/
+build*/
 *.log
 *.aux
 *.pdf
