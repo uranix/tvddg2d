@@ -22,12 +22,13 @@ struct grid {
         return data[i * Ny + j];
     }
 
-    void fill(std::function<param(double, double)> f) {
+    template<class PROBLEM>
+    void fill(const PROBLEM &prob) {
         for (int i = 0; i < Nx; i++)
             for (int j = 0; j < Ny; j++) {
                 double x = (i + 0.5) * hx;
                 double y = (j + 0.5) * hy;
-                (*this)(i, j) = f(x, y);
+                (*this)(i, j) = prob.param(x, y);
             }
     }
 };

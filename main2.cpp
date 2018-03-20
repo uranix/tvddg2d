@@ -4,64 +4,55 @@
 
 #include <iostream>
 
-#include "elast.h"
+#include "shallow.h"
 
-struct waves : public elast::equations {
+struct drop : public shallow::equations {
     vars_t initial(double x, double y) const {
-        double x0 = 0.2;
-        double sig = 0.01;
-        return vars_t(-2, 0, 4, 2, 0) * std::exp(-0.5 * std::pow((x-x0)/sig, 2));
-    }
-    param_t param(double x, double y) const {
-        if (std::abs(x - 1) < 0.5 and std::abs(y - 0.5) < 0.1)
-            return param_t{1., 100., 200., x, y};
-        return param_t{1., 1., 2., x, y};
+        double x0 = 0.2, y0 = 0.2;
+        double r2 = std::pow(x - x0, 2) + std::pow(y - y0, 2);
+        double s2 = std::pow(0.05, 2);
+        double h = 1 + 3 * std::exp(-r2 / s2);
+        return vars_t(h, 0, 0);
     }
     vars_t bc(side s, const vars_t &U, const param_t &p, double t) const {
         if (s == side::L) {
-            dir d = dir::X;
-            return iW(d, U, p) * L(d, U, p).cwiseMin(0).cwiseProduct(W(d, U, p) * U);
+            vars_t UL = U;
+            UL[1] = -U[1];
+            return riemman(dir::X, UL, U, p, p).first;
         }
         if (s == side::R) {
-            dir d = dir::X;
-            return iW(d, U, p) * L(d, U, p).cwiseMax(0).cwiseProduct(W(d, U, p) * U);
+            vars_t UR = U;
+            UR[1] = -U[1];
+            return riemman(dir::X, U, UR, p, p).first;
         }
         if (s == side::D) {
             vars_t UL = U;
-
-            UL[4] = -U[4];
-            UL[3] = -U[3];
-
+            UL[2] = -U[2];
             return riemman(dir::Y, UL, U, p, p).first;
         }
         if (s == side::U) {
             vars_t UR = U;
-
-            UR[4] = -U[4];
-            UR[3] = -U[3];
-
+            UR[2] = -U[2];
             return riemman(dir::Y, U, UR, p, p).first;
         }
-        throw;
+        return vars_t();
     }
 };
 
 template<int sch>
 void run() {
     PROFILE_ME;
-    constexpr int p = 2;
+    constexpr int p = 4;
     constexpr int order = 3;
 
     const char *sname[3] = {"LO", "HO", "TVD"};
 
-    const std::string prefix("leveque_" + std::string(sname[sch]) + ".");
+    const std::string prefix("shallow_" + std::string(sname[sch]) + ".");
 
-    waves prob;
-    grid<waves::param_t> g(100, 50, 2.0, 1.0);
+    drop prob;
+    grid<drop::param_t> g(30, 30, 1.0, 1.0);
 
-    g.fill(prob);
-
-    stepper<waves, p, order, sch> stp(g);
+    stepper<drop, p, order, sch> stp(g);
 
     stp.lay.fill(prob);
     stp.lay.save(prefix + "0.vtk");
@@ -71,7 +62,7 @@ void run() {
     const double tmax = 1;
     const double dtout = tmax / 300;
     double tout = dtout;
-    const double C = 0.04;
+    const double C = 0.02;
     int step = 1;
     while (t < tmax) {
         double dt = stp.estimate_timestep(prob, C);
@@ -89,9 +80,9 @@ void run() {
 int main() {
     PROFILE_ME;
 
-//    run<scheme::LO>();
-    run<scheme::HO>();
-//    run<scheme::TVD>();
+    run<scheme::LO>();
+//    run<scheme::HO>();
+    run<scheme::TVD>();
 
     PROFILE_END;
     std::cout << profiler::getInstance() << std::endl;
