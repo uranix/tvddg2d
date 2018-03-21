@@ -89,8 +89,8 @@ int main() {
     PROFILE_ME;
 
 //    run<scheme::LO>();
-//    run<scheme::HO>();
-    run<scheme::TVD>();
+    run<scheme::HO>();
+//    run<scheme::TVD>();
 
     PROFILE_END;
     std::cout << profiler::getInstance() << std::endl;

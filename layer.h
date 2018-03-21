@@ -19,13 +19,13 @@ struct layer {
     using vars_t = typename PROBLEM::vars_t;
     using param_t = typename PROBLEM::param_t;
 
-    const grid<param_t> &g;
+    const grid<PROBLEM> &g;
 
     using cell_t = cell<vars_t, p>;
     using quad_t = quadrature<p>;
     std::vector<cell_t> data;
 
-    layer(const grid<param_t> &g) : g(g), data(g.Nx * g.Ny) {
+    layer(const grid<PROBLEM> &g) : g(g), data(g.Nx * g.Ny) {
     }
     const cell_t &operator()(int i, int j) const {
         return data[i * g.Ny + j];

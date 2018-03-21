@@ -29,11 +29,11 @@ struct flux_layer {
     using flux_cell_lo_t = flux_cell_lo<vars_t, vec_t, mat_t, p>;
     using quad_t = quadrature<p>;
 
-    const grid<param_t> &g;
+    const grid<PROBLEM> &g;
     std::vector<flux_cell_lo_t> low_order_data;
     std::vector<flux_cell_t> high_order_data;
 
-    flux_layer(const grid<param_t> &g)
+    flux_layer(const grid<PROBLEM> &g)
         : g(g), low_order_data(g.Nx * g.Ny), high_order_data(g.Nx * g.Ny)
     {
     }
@@ -69,7 +69,7 @@ struct flux_layer {
                         const param_t &pL = g(i-1, j);
                         const param_t &pR = g(i  , j);
 
-                        const std::pair<vars_t, vars_t> &ff = prob.riemman(dir::X, uL, uR, pL, pR);
+                        const std::pair<vars_t, vars_t> &ff = prob.riemman(dir::X, g.xcond(i-1, j), uL, uR, pL, pR);
 
                         flux_cell_lo_t &fL = low_order(i-1, j);
                         flux_cell_lo_t &fR = low_order(i  , j);
@@ -89,7 +89,7 @@ struct flux_layer {
                         const param_t &pL = g(i, j-1);
                         const param_t &pR = g(i, j  );
 
-                        const std::pair<vars_t, vars_t> &ff = prob.riemman(dir::Y, uL, uR, pL, pR);
+                        const std::pair<vars_t, vars_t> &ff = prob.riemman(dir::Y, g.ycond(i, j-1), uL, uR, pL, pR);
 
                         flux_cell_lo_t &fL = low_order(i, j-1);
                         flux_cell_lo_t &fR = low_order(i, j  );
@@ -175,7 +175,7 @@ struct flux_layer {
                 for (int j = 0; j < g.Ny; j++)
                     for (int k = 0; k <= p; k++) {
                         const std::pair<vars_t, vars_t> &ff = prob.riemman(
-                                dir::X, lay(i-1, j)(p+1, k), lay(i, j)(-1, k), g(i-1, j), g(i, j)
+                                dir::X, g.xcond(i-1, j), lay(i-1, j)(p+1, k), lay(i, j)(-1, k), g(i-1, j), g(i, j)
                             );
                         high_order(i-1, j).F[p+1][k] = ff.first;
                         high_order(i  , j).F[  0][k] = ff.second;
@@ -185,7 +185,7 @@ struct flux_layer {
                 for (int j = 1; j < g.Ny; j++)
                     for (int k = 0; k <= p; k++) {
                         const std::pair<vars_t, vars_t> &ff = prob.riemman(
-                                dir::Y, lay(i, j-1)(k, p+1), lay(i, j)(k, -1), g(i, j-1), g(i, j)
+                                dir::Y, g.ycond(i, j-1), lay(i, j-1)(k, p+1), lay(i, j)(k, -1), g(i, j-1), g(i, j)
                             );
                         high_order(i, j-1).G[k][p+1] = ff.first;
                         high_order(i, j  ).G[k][  0] = ff.second;

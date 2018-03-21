@@ -30,17 +30,23 @@ struct vars : public Eigen::Matrix<double, 5, 1> {
 
 struct param {
     double rho, mu, lambda;
-    double x, y;
+};
+
+struct cond {
+    // nu < 0 -> nu = inf
+    double nu;
+    explicit cond(const double nu = -1) : nu(nu) { }
 };
 
 struct equations {
     using vars_t = vars;
     using param_t = param;
+    using cond_t = cond;
 
     using vec_t = Eigen::Matrix<double, 5, 1>;
     using mat_t = Eigen::Matrix<double, 5, 5>;
 
-    std::pair<vars_t, vars_t> riemman(dir d, const vars_t &UL, const vars_t &UR, const param_t &pL, const param_t &pR) const {
+    std::pair<vars_t, vars_t> riemman(dir d, cond cnd, const vars_t &UL, const vars_t &UR, const param_t &pL, const param_t &pR) const {
         if (d == dir::X) {
             const double vxL  = UL[0];
             const double vyL  = UL[1];
@@ -77,16 +83,13 @@ struct equations {
             // nu != inf -> nunum = nu, nuden = 1
             double nunum, nuden;
 
-            // TODO Introduce edge param grid to distinguish between solvers case
-            if (rL == rR and mL == mR and lL == lR) {
-                nunum = 10;
-                nuden = 1;
+            if (cnd.nu < 0) {
+                nunum = 1;
+                nuden = 0;
             } else {
-                nunum = 10;
+                nunum = cnd.nu;
                 nuden = 1;
             }
-
-            nuden = 1;
 
             const double c1 = (apL*(-sxxL + sxxR + apR*(-vxL + vxR)))/(apL + apR);
             const double c5 = (apR*( sxxL - sxxR + apL*(-vxL + vxR)))/(apL + apR);
@@ -105,7 +108,7 @@ struct equations {
 
         vars_t ULrot(UL[1], -UL[0], UL[3], UL[2], -UL[4]);
         vars_t URrot(UR[1], -UR[0], UR[3], UR[2], -UR[4]);
-        std::pair<vars_t, vars_t> flxs = riemman(dir::X, ULrot, URrot, pL, pR);
+        std::pair<vars_t, vars_t> flxs = riemman(dir::X, cnd, ULrot, URrot, pL, pR);
         const auto &fLrot = flxs.first;
         const auto &fRrot = flxs.second;
 

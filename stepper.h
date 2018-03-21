@@ -6,7 +6,7 @@
 template<typename PROBLEM, int p>
 struct base_stepper {
     layer<PROBLEM, p> lay;
-    base_stepper(const grid<typename PROBLEM::param_t> &g) : lay(g) { }
+    base_stepper(const grid<PROBLEM> &g) : lay(g) { }
     // y := a y + b x
     void combine(const layer<PROBLEM, p> &x, layer<PROBLEM, p> &y, const double alpha, const double beta) {
         PROFILE_ME;
@@ -85,7 +85,7 @@ template<typename PROBLEM, int p, int sch>
 struct stepper<PROBLEM, p, 1, sch> : public base_stepper<PROBLEM, p> {
     flux_layer<PROBLEM, p, sch> flx;
 
-    stepper(const grid<typename PROBLEM::param_t> &g)
+    stepper(const grid<PROBLEM> &g)
         : base_stepper<PROBLEM, p>(g), flx(g)
     {
     }
@@ -107,7 +107,7 @@ struct stepper<PROBLEM, p, 2, sch> : public base_stepper<PROBLEM, p> {
 
     using quad_t = quadrature<p>;
 
-    stepper(const grid<typename PROBLEM::param_t> &g)
+    stepper(const grid<PROBLEM> &g)
         : base_stepper<PROBLEM, p>(g), laymid(g), flx(g)
     {
     }
@@ -134,7 +134,7 @@ struct stepper<PROBLEM, p, 3, sch> : public base_stepper<PROBLEM, p> {
 
     using quad_t = quadrature<p>;
 
-    stepper(const grid<typename PROBLEM::param_t> &g)
+    stepper(const grid<PROBLEM> &g)
         : base_stepper<PROBLEM, p>(g), laymid(g), flx(g)
     {
     }
