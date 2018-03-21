@@ -72,10 +72,27 @@ struct equations {
             const double asR = std::sqrt(rR * mR);
             const double apR = std::sqrt(rR * l2mR);
 
-            double c1 = (apL*(-sxxL + sxxR + apR*(-vxL + vxR)))/(apL + apR);
-            double c2 = (asL*(-sxyL + sxyR + asR*(-vyL + vyR)))/(asL + asR);
-            double c4 = (asR*(sxyL - sxyR + asL*(-vyL + vyR)))/(asL + asR);
-            double c5 = (apR*(sxxL - sxxR + apL*(-vxL + vxR)))/(apL + apR);
+            // nu = nunum / nuden
+            // nu = inf  -> nunum = 1, nuden = 0
+            // nu != inf -> nunum = nu, nuden = 1
+            double nunum, nuden;
+
+            // TODO Introduce edge param grid to distinguish between solvers case
+            if (rL == rR and mL == mR and lL == lR) {
+                nunum = 10;
+                nuden = 1;
+            } else {
+                nunum = 10;
+                nuden = 1;
+            }
+
+            nuden = 1;
+
+            const double c1 = (apL*(-sxxL + sxxR + apR*(-vxL + vxR)))/(apL + apR);
+            const double c5 = (apR*( sxxL - sxxR + apL*(-vxL + vxR)))/(apL + apR);
+
+            const double c2 = -(asL*(nunum*(sxyL - sxyR) + asR*(nuden*sxyL + nunum*(vyL - vyR))))/(asL*asR*nuden + (asL + asR)*nunum);
+            const double c4 =  (asR*(nunum*(sxyL - sxyR - asL*vyL + asL*vyR) - (asL*nuden*sxyR)))/(asL*asR*nuden + (asL + asR)*nunum);
 
             vars_t ULs = UL + vars_t( c1 / apL,  c2 / asL, c1, c1 * srL, c2);
             vars_t URs = UR + vars_t(-c5 / apR, -c4 / asR, c5, c5 * srR, c4);
